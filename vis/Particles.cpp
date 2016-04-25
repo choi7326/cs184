@@ -18,7 +18,18 @@ Particles::Particles()
     int nx = 10;
     int ny = 10;
     int nz = 10;
-    float d = 0.1;
+    float d = 0.1; //resting density
+    float g = 9.8; //gravisty
+    kernel_size = d*1.4;
+    radius = d*0.45;
+    k = 0.001; //artificial pressure
+    n = 4; //artificial pressure
+    q = 0; //artificial pressure
+    epsilon = 1e3;
+    nIters = 10;
+    rest_density = 1/(d*d*d);
+    dt = 0.001;
+
     for(int x=0; x<nx; x++)
     {
         for(int y=0; y<ny; y++)
@@ -31,6 +42,35 @@ Particles::Particles()
             }
         }
     }
+}
+
+void Particles::step() {   
+    for(const Particle &par : particles) {  
+        std::vector<Particle> neighbors;  
+        par.v.z = par.v.z + dt * g;
+        par.p.z = par.p.z + dt * par.v.z;
+        //find neighbors & store
+        //roughly 9 cells. 
+        for(int i = 0; i <= nIters; i++) {
+            //calculate density
+            //calculate position delta
+            //update p*
+            //collision
+        }
+        //update velocity
+        //update position t+1
+        //apply viscosity & vorticity
+    }
+}
+
+
+void Particles::hash_grid() {
+    //build the hash grid
+}
+
+void Particles::find_neighbors() 
+{
+    //find neighbors
 }
 
 void Particles::render() const
