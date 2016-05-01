@@ -23,22 +23,13 @@
 #include <math.h>
 #endif
 
+#include <unordered_map>
+
 class Particles {
 public:
     Particles();
     void render() const;
     void step(){} // simulate one frame
-    double rest_density;
-    double kernel_size;
-    double radius;
-    double k;
-    double n;
-    double q;
-    double epsilon;
-    double nIters;
-    double dt;
-
-
 
 private:
     struct Particle
@@ -49,7 +40,17 @@ private:
     	double lambda;
     	std::vector<Particle> neighbors;
     };
+    double rest_density;
+    double kernel_size;
+    double radius;
+    double k;
+    double n;
+    double q;
+    double epsilon;
+    double nIters;
+    double dt;
     std::vector<Particle> particles;
+    std::unordered_map<int, std::vector<Particle>> hashGrid;
 
 };
 
