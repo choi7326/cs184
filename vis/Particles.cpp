@@ -44,23 +44,55 @@ Particles::Particles()
     }
 }
 
+double Particles::smoothing_kernel(r, h) {
+    double first = 315/(64*PI*pow(h, 9));
+    double second = pow(pow(h, 2) - abs(pow(r, 2)), 3);
+    return first*second;
+}
+
+double Particles::spiky_kernel(r, h) {
+    double first = 45 / (PI * pow(h, 6));
+    double second = pow((h - abs(r)), 2);
+    double third = r / (abs(r));
+    return first*second*third;
+}
+
 void Particles::step() {   
     for(const Particle &par : particles) {  
         std::vector<Particle> neighbors;  
         par.v.z = par.v.z + dt * g;
+        double pt = par.p.z;
         par.p.z = par.p.z + dt * par.v.z;
+    }
+    for(const Particle &par : particles) {
         //find neighbors & store
-        //roughly 9 cells. 
-        for(int i = 0; i <= nIters; i++) {
-            //calculate density
-            //calculate position delta
-            //update p*
-            //collision
+        //roughly 9 cells.
+    }    
+    for(int i = 0; i <= nIters; i++) {
+        for(const Particle &par : particles) {
+            //for all particles, find lambda i
+            double density = 0;
+            double lambda = 0;
+            for (const Particle &neighbor : neighbors) { //iterate through neighbors
+                //calculate density
+                density += smoothing_kernel(par.p.z - neighbor.p.z, radius);
+                //calculate lambda
+                lambda += spiky_kernel(par.p.z - neighbor.p.z, radius);
+            }
+            double C = (density / rest_density) - 1;
+            par.density = density;
+            par.lambda = -C/ pow((1/rest_density) * lambda, 2);
         }
-        //update velocity
+        for(const Particle &par : particles) {
+           //for all particles, find position delta 
+        }
+        //update velocity t+1
+        par.v.z = (par.p.z - pt) / dt;
         //update position t+1
+        par.p.z = par.p.z;
         //apply viscosity & vorticity
     }
+    
 }
 
 

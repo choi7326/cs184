@@ -28,14 +28,29 @@ public:
     Particles();
     void render() const;
     void step(){} // simulate one frame
+    double rest_density;
+    double kernel_size;
+    double radius;
+    double k;
+    double n;
+    double q;
+    double epsilon;
+    double nIters;
+    double dt;
+
+
+
 private:
     struct Particle
     {
         glm::dvec3 p;
         glm::dvec3 v;
+        double density;
+    	double lambda;
+    	std::vector<Particle> neighbors;
     };
-    
     std::vector<Particle> particles;
+
 };
 
 #endif /* PARTICLES_H */
