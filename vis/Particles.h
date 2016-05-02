@@ -57,6 +57,7 @@ private:
     double nIters;
     double dt;
     double g;
+    double hgSize;
     std::vector<Particle> particles;
     std::unordered_map<int, std::vector<Particle>> hashGrid;
 

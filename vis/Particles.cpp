@@ -15,11 +15,11 @@
 
 Particles::Particles() 
 {
-    int nx = 10;
-    int ny = 10;
-    int nz = 10;
+    int nx = 5;
+    int ny = 5;
+    int nz = 5;
     float d = 0.1; //resting density
-    g = 9.8; //gravisty
+    g = -9.8; //gravisty
     kernel_size = d*1.4;
     radius = d*0.45;
     k = 0.001; //artificial pressure
@@ -29,6 +29,7 @@ Particles::Particles()
     nIters = 10;
     rest_density = 1/(d*d*d);
     dt = 0.001;
+    hgSize = rest_density * 3;
 
     for(int x=0; x<nx; x++)
     {
@@ -38,6 +39,7 @@ Particles::Particles()
             {
                 Particle par;
                 par.p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5+ny*0.5)*d-1.0, (z+0.5-nz*0.5)*d);
+                par.new_p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5+ny*0.5)*d-1.0, (z+0.5-nz*0.5)*d);
                 particles.push_back(par);
             }
         }
@@ -57,19 +59,35 @@ glm::dvec3 Particles::spiky_kernel(glm::dvec3 r, double h) {
     return first*second*third;
 }
 
-void Particles::step() {   
+void Particles::step() {
     for(Particle &par : particles) {  
         std::vector<Particle> neighbors;
         //only z is affected by gravity  
         par.new_p = par.p;
-        par.v.z = par.v.z + dt * g;
-        par.new_p.z = par.p.z + dt * par.v.z;
+        par.v.y = par.v.y + dt * g;
+        par.new_p.y = par.p.y + dt * par.v.y;
     }
-    for(Particle &par : particles) {
-        //find neighbors & store
-        //roughly 9 cells.
-        //using new_p
-    }    
+
+    for (Particle &par : particles) {
+        printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
+    }   
+
+    // for (Particle &par : particles) {
+    //     printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
+    // }
+
+    // printf("checkpoint 1\n");
+
+    hash_grid();
+    find_neighbors();
+
+    // printf("checkpoint 2\n");
+
+    // for(Particle &par : particles) {
+    //     //find neighbors & store
+    //     //roughly 9 cells.
+    //     //using new_p
+    // }    
     for(int i = 0; i <= nIters; i++) {
         for(Particle &par : particles) {
             //for all particles, find lambda i
@@ -96,21 +114,44 @@ void Particles::step() {
             par.new_p = par.p + pd;
         }
     }
+
+    // printf("checkpoint 3\n");
+
+    // for (Particle &par : particles) {
+    //     printf("x: %f, y: %f, z: %f\n", par.v.x, par.v.y, par.v.z);
+    // }
+
     for (Particle &par : particles) {
         //update velocity t+1
+
         par.v = (par.new_p - par.p) / dt;
+
+        // printf("x: %f, y: %f, z: %f\n", par.v.x, par.v.y, par.v.z);
+
         //apply viscosity & vorticity
         
         //update position t+1
         par.p = par.new_p;   
+
+        // printf("x: %f, y: %f, z: %f", par.p.x, par.p.y, par.p.z);
     }
+
+    // printf("checkpoint 4\n");
+
+
+    // for(Particle &par : particles) {  
+    //     std::vector<Particle> neighbors;
+    //     //only z is affected by gravity  
+    //     par.v.y = par.v.y + dt * g;
+    //     par.p.y = par.p.y + dt * par.v.y;
+    // }
+
 }
 
 
 // returns hash value of a particle
 int Particles::hash(double x, double y, double z) {
-    double h = rest_density * 3;
-    return floor(x/h)+floor(y/h)*1300583+floor(z/h)*105607;
+    return floor(x/hgSize)+floor(y/hgSize)*1300583+floor(z/hgSize)*105607;
 }
 
 // updates hash_grid()
@@ -135,10 +176,11 @@ void Particles::find_neighbors()
 {
     for(Particle &par : particles) {
         double x = par.p.x, y = par.p.y, z = par.p.z;  
+        double fx = floor(x/hgSize), fy = floor(y/hgSize), fz = floor(z/hgSize);
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 for (int k = -1; k < 2; k++) {
-                    int hashVal = hash(par.p.x, par.p.y, par.p.z);
+                    int hashVal = (fx + i)+(fx + j)*1300583+(fz + k)*105607;;
                     if (hashGrid.find(hashVal) == hashGrid.end()) {
                         // dont do anything
                     } else {
