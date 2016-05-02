@@ -29,12 +29,16 @@ class Particles {
 public:
     Particles();
     void render() const;
-    void step(){} // simulate one frame
-
+    void step(); // simulate one frame
+    double smoothing_kernel(glm::dvec3 r, double h);
+    glm::dvec3 spiky_kernel(glm::dvec3 r, double h);
+    void hash_grid();
+    void find_neighbors();
 private:
     struct Particle
     {
         glm::dvec3 p;
+        glm::dvec3 new_p;
         glm::dvec3 v;
         double density;
     	double lambda;
@@ -49,6 +53,7 @@ private:
     double epsilon;
     double nIters;
     double dt;
+    double g;
     std::vector<Particle> particles;
     std::unordered_map<int, std::vector<Particle>> hashGrid;
 
