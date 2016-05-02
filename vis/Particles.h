@@ -34,6 +34,7 @@ public:
     glm::dvec3 spiky_kernel(glm::dvec3 r, double h);
     void hash_grid();
     void find_neighbors();
+    // void wireBox(int myVar);
 private:
     struct Particle
     {

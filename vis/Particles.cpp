@@ -37,7 +37,7 @@ Particles::Particles()
             for(int z=0; z<nz; z++)
             {
                 Particle par;
-                par.p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5)*d-1.0, (z+0.5-nz*0.5)*d);
+                par.p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5+ny*0.5)*d-1.0, (z+0.5-nz*0.5)*d);
                 particles.push_back(par);
             }
         }
@@ -148,5 +148,6 @@ void Particles::render() const
     }
     
     glPopAttrib();
+    glutWireCube(2.0);
 }
 
