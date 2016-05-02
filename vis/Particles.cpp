@@ -15,21 +15,9 @@
 
 Particles::Particles() 
 {
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
-    float d = 0.1; //resting density
-    g = -9.8; //gravisty
-    kernel_size = d*1.4;
-    radius = d*0.45;
-    k = 0.001; //artificial pressure
-    n = 4; //artificial pressure
-    q = 0; //artificial pressure
-    epsilon = 1e3;
-    nIters = 10;
-    rest_density = 1/(d*d*d);
-    dt = 0.001;
-    hgSize = rest_density * 3;
+    int nx = 3;
+    int ny = 3;
+    int nz = 3;
 
     for(int x=0; x<nx; x++)
     {
@@ -53,7 +41,7 @@ double Particles::smoothing_kernel(glm::dvec3 r, double h) {
 }
 
 glm::dvec3 Particles::spiky_kernel(glm::dvec3 r, double h) {
-    double first = 45 / (M_PI * pow(h, 6));
+    double first = 45.0 / (M_PI * pow(h, 6));
     double second = pow((h - length(r)), 2);
     glm::dvec3 third = r / (length(r));
     return first*second*third;
@@ -68,15 +56,11 @@ void Particles::step() {
         par.new_p.y = par.p.y + dt * par.v.y;
     }
 
-    for (Particle &par : particles) {
-        printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
-    }   
-
     // for (Particle &par : particles) {
     //     printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
     // }
 
-    // printf("checkpoint 1\n");
+    printf("checkpoint 1\n");
 
     hash_grid();
     find_neighbors();
@@ -112,8 +96,14 @@ void Particles::step() {
             pd = 1/(rest_density) * pd;
             //collision handling
             par.new_p = par.p + pd;
+            // printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
+
         }
     }
+
+    // for (Particle &par : particles) {
+    //     printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
+    // }   
 
     // printf("checkpoint 3\n");
 
@@ -148,24 +138,28 @@ void Particles::step() {
 
 }
 
-
 // returns hash value of a particle
-int Particles::hash(double x, double y, double z) {
-    return floor(x/hgSize)+floor(y/hgSize)*1300583+floor(z/hgSize)*105607;
-}
+// int Particles::hash(double x, double y, double z) {
+//     return floor(x/hgSize)+floor(y/hgSize)*1300583+floor(z/hgSize)*105607;
+// }
 
 // updates hash_grid()
 void Particles::hash_grid() {
     //build the hash grid
-    std::unordered_map<int, std::vector<Particle>> newHashGrid;
+    std::unordered_map<Grid, std::vector<Particle>, GridHasher> newHashGrid;
     for(Particle &par : particles) {  
-        int hashVal = hash(par.p.x, par.p.y, par.p.z);
-        if (newHashGrid.find(hashVal) == newHashGrid.end()) {
+        Grid newGrid;
+        newGrid.x = floor(par.p.x/kernel_size); 
+        newGrid.y = floor(par.p.y/kernel_size);
+        newGrid.z = floor(par.p.z/kernel_size);
+
+        auto search = newHashGrid.find(newGrid);
+        if (search == newHashGrid.end()) {
             std::vector<Particle> cell;
             cell.push_back(par);
-            newHashGrid[hashVal] = cell;
+            newHashGrid.insert({newGrid, cell});
         } else {
-            newHashGrid[hashVal].push_back(par);
+            search->second.push_back(par);
         }
     }
     hashGrid = newHashGrid;
@@ -175,21 +169,30 @@ void Particles::hash_grid() {
 void Particles::find_neighbors() 
 {
     for(Particle &par : particles) {
+        par.neighbors.clear();
+        Grid newGrid;
         double x = par.p.x, y = par.p.y, z = par.p.z;  
-        double fx = floor(x/hgSize), fy = floor(y/hgSize), fz = floor(z/hgSize);
+        double fx = floor(x/kernel_size), fy = floor(y/kernel_size), fz = floor(z/kernel_size);
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 for (int k = -1; k < 2; k++) {
                     int hashVal = (fx + i)+(fx + j)*1300583+(fz + k)*105607;;
-                    if (hashGrid.find(hashVal) == hashGrid.end()) {
+
+                    newGrid.x = fx + i; 
+                    newGrid.y = fy + j;
+                    newGrid.z = fz + k;
+
+                    auto search = hashGrid.find(newGrid);
+                    if (hashGrid.find(newGrid) == hashGrid.end()) {
                         // dont do anything
                     } else {
                         // vector1.insert( vector1.end(), vector2.begin(), vector2.end() );
-                        par.neighbors.insert( par.neighbors.end(), hashGrid[hashVal].begin(), hashGrid[hashVal].end() );
+                        par.neighbors.insert( par.neighbors.end(), search->second.begin(), search->second.end() );
                     }
                 }
             }
         }
+        printf("neighbors: %lu\n", par.neighbors.size());
     }
 }
 

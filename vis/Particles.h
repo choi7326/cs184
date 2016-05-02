@@ -34,7 +34,6 @@ public:
     glm::dvec3 spiky_kernel(glm::dvec3 r, double h);
     void hash_grid();
     void find_neighbors();
-	int hash(double x, double y, double z);
 
     // void wireBox(int myVar);
 private:
@@ -47,19 +46,53 @@ private:
     	double lambda;
     	std::vector<Particle> neighbors;
     };
-    double rest_density;
-    double kernel_size;
-    double radius;
-    double k;
-    double n;
-    double q;
-    double epsilon;
-    double nIters;
-    double dt;
-    double g;
-    double hgSize;
-    std::vector<Particle> particles;
-    std::unordered_map<int, std::vector<Particle>> hashGrid;
+
+    // double rest_density;
+    // double kernel_size;
+    // double radius;
+    // double k;
+    // double n;
+    // double q;
+    // double epsilon;
+    // double nIters;
+    // double dt;
+    // double g;
+
+    double d = 0.1; //resting density
+    double g = -9.8; //gravisty
+    double kernel_size = d*1.4;
+    double radius = d*0.45;
+    double k = 0.001; //artificial pressure
+    double n = 4; //artificial pressure
+    double q = 0; //artificial pressure
+    double epsilon = 1e3;
+    double nIters = 1;
+    double rest_density = 1/(d*d*d);
+    double dt = 0.001;
+
+    struct Grid
+	{
+	  int x;
+	  int y;
+	  int z;
+
+	  bool operator==(const Grid &other) const
+	  { return (x == other.x
+	            && y == other.y
+	            && z == other.z);
+	  }
+	};
+
+	struct GridHasher
+	{
+	  std::size_t operator()(const Grid& g) const
+	  {
+	    return floor(g.x)+floor(g.y)*1300583+floor(g.z)*105607;;
+	  }
+	};
+
+	std::vector<Particle> particles;
+    std::unordered_map<Grid, std::vector<Particle>, GridHasher> hashGrid;
 
 };
 
