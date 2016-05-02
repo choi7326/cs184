@@ -11,6 +11,8 @@
  * Created on April 15, 2016, 12:16 PM
  */
 
+#define NUM_CELLS 1000
+
 #include "Particles.h"
 
 Particles::Particles() 
@@ -107,13 +109,47 @@ void Particles::step() {
 }
 
 
-void Particles::hash_grid() {
-    //build the hash grid
+// returns hash value of a particle
+int Particles::hash(double x, double y, double z) {
+    return floor(x/NUM_CELLS)+floor(y/NUM_CELLS)*1300583+floor(z/NUM_CELLS)*105607;
 }
 
+// updates hash_grid()
+void Particles::hash_grid() {
+    //build the hash grid
+    std::unordered_map<int, std::vector<Particle>> newHashGrid;
+    for(Particle &par : particles) {  
+        int hashVal = hash(par.p.x, par.p.y, par.p.z);
+        if (newHashGrid.find(hashVal) == newHashGrid.end()) {
+            std::vector<Particle> cell;
+            cell.push_back(par);
+            newHashGrid[hashVal] = cell;
+        } else {
+            newHashGrid[hashVal].push_back(par);
+        }
+    }
+    hashGrid = newHashGrid;
+}
+
+// finds the neighbors of all particles
 void Particles::find_neighbors() 
 {
-    //find neighbors
+    for(Particle &par : particles) {
+        double x = par.p.x, y = par.p.y, z = par.p.z;  
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                for (int k = -1; k < 2; k++) {
+                    int hashVal = hash(par.p.x, par.p.y, par.p.z);
+                    if (hashGrid.find(hashVal) == hashGrid.end()) {
+                        // dont do anything
+                    } else {
+                        // vector1.insert( vector1.end(), vector2.begin(), vector2.end() );
+                        par.neighbors.insert( par.neighbors.end(), hashGrid[hashVal].begin(), hashGrid[hashVal].end() );
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Particles::render() const
