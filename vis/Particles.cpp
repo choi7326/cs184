@@ -11,8 +11,6 @@
  * Created on April 15, 2016, 12:16 PM
  */
 
-#define NUM_CELLS 1000
-
 #include "Particles.h"
 
 Particles::Particles() 
@@ -111,7 +109,8 @@ void Particles::step() {
 
 // returns hash value of a particle
 int Particles::hash(double x, double y, double z) {
-    return floor(x/NUM_CELLS)+floor(y/NUM_CELLS)*1300583+floor(z/NUM_CELLS)*105607;
+    double h = rest_density * 3;
+    return floor(x/h)+floor(y/h)*1300583+floor(z/h)*105607;
 }
 
 // updates hash_grid()
