@@ -43,25 +43,23 @@ double Particles::smoothing_kernel(glm::dvec3 r, double h) {
 glm::dvec3 Particles::spiky_kernel(glm::dvec3 r, double h) {
     double first = 45.0 / (M_PI * pow(h, 6));
     double second = pow((h - length(r)), 2);
+    //printf("magnitude = %f\n", (length(r)));
     glm::dvec3 third = r / (length(r));
-    return first*second*third;
+    glm::dvec3 result = first*second*third;
+    //printf("spiky: %f, %f, %f\n", result.x, result.y, result.z);
+    return result;
 }
 
 void Particles::step() {
-    for(Particle &par : particles) {  
+    for(Particle &par : particles) { 
+        //printf("x: %f, y: %f, z: %f\n", par.p.x, par.p.y, par.p.z); 
         std::vector<Particle> neighbors;
         //only z is affected by gravity  
-        par.new_p = par.p;
         par.v.y = par.v.y + dt * g;
         par.new_p.y = par.p.y + dt * par.v.y;
     }
 
-    // for (Particle &par : particles) {
-    //     printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
-    // }
-
     printf("checkpoint 1\n");
-
     hash_grid();
     find_neighbors();
 
@@ -73,11 +71,12 @@ void Particles::step() {
             glm::dvec3 lambda = glm::dvec3(0.0, 0.0, 0.0);
             for (const Particle &neighbor : par.neighbors) { //iterate through neighbors
                 //calculate density
-                density += smoothing_kernel(par.p - neighbor.p, radius);
+                density += smoothing_kernel(par.p - neighbor.p, kernel_size);
                 //calculate lambda
-                lambda += spiky_kernel(par.p - neighbor.p, radius);
+                lambda += spiky_kernel(par.p - neighbor.p, kernel_size);
             }
             double C = (density / rest_density) - 1;
+            printf("C = %f\n", C);
             par.density = density;
             par.lambda = -C/ pow(length((1/rest_density) * lambda), 2);
         }
@@ -85,7 +84,9 @@ void Particles::step() {
             //for all particles, find position delta 
             glm::dvec3 pd = glm::dvec3(0.0, 0.0, 0.0);
             for (const Particle &neighbor : par.neighbors) {
-                pd += (par.lambda + neighbor.lambda) * spiky_kernel(par.p - neighbor.p, radius);
+                double lambdas = par.lambda + neighbor.lambda;
+                printf("par: %f, neighbor:%f\n", par.lambda, neighbor.lambda);
+                pd += (lambdas) * spiky_kernel(par.p - neighbor.p, kernel_size);
             }
             pd = 1/(rest_density) * pd;
             //collision handling
@@ -99,7 +100,7 @@ void Particles::step() {
             if (par.new_p.z < -1. or par.new_p.z > 1.) {
                 par.new_p.z = par.new_p.z + dt * -par.v.z;
             }
-            // printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
+            //printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
 
         }
     }
@@ -111,7 +112,7 @@ void Particles::step() {
         
         //update position t+1
         par.p = par.new_p;   
-        printf("x: %f, y: %f, z: %f\n", par.p.x, par.p.y, par.p.z);
+        
     }
 
     // printf("checkpoint 4\n");
