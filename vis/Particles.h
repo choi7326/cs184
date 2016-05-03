@@ -34,6 +34,7 @@ public:
     glm::dvec3 spiky_kernel(glm::dvec3 r, double h);
     void hash_grid();
     void find_neighbors();
+    double magnitude(glm::dvec3 r);
 
     // void wireBox(int myVar);
 private:
@@ -66,7 +67,7 @@ private:
     double n = 4; //artificial pressure
     double q = 0; //artificial pressure
     double epsilon = 1e3;
-    double nIters = 1;
+    double nIters = 10;
     double rest_density = 1/(d*d*d);
     double dt = 0.001;
 
