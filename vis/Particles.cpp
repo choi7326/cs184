@@ -76,8 +76,14 @@ void Particles::step() {
             }
             double C = (density / rest_density) - 1;
             printf("C = %f\n", C);
-            par.density = density;
-            par.lambda = -C/ pow(length((1/rest_density) * lambda), 2);
+            if (par.neighbors.size() == 0) {
+                par.lambda = 0.;
+                par.density = 0.;
+            } else {
+                par.density = density;
+                par.lambda = -C/ pow(length((1/rest_density) * lambda), 2);
+            }
+            
         }
         for(Particle &par : particles) {
             //for all particles, find position delta 
