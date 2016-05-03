@@ -15,9 +15,9 @@
 
 Particles::Particles() 
 {
-    int nx = 3;
-    int ny = 3;
-    int nz = 3;
+    int nx = 5;
+    int ny = 5;
+    int nz = 5;
 
     for(int x=0; x<nx; x++)
     {
@@ -163,6 +163,9 @@ void Particles::hash_grid() {
         }
     }
     hashGrid = newHashGrid;
+
+    // for ( auto it = hashGrid.begin(); it != hashGrid.end(); ++it )
+    //     std::cout << " " << it->first << ":" << it->second.size();
 }
 
 // finds the neighbors of all particles
@@ -176,17 +179,23 @@ void Particles::find_neighbors()
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 for (int k = -1; k < 2; k++) {
-                    int hashVal = (fx + i)+(fx + j)*1300583+(fz + k)*105607;;
+                    if(i == 0 && j == 0 && k == 0) 
+                        continue;
 
                     newGrid.x = fx + i; 
                     newGrid.y = fy + j;
                     newGrid.z = fz + k;
+
+
+                    // printf("Grid - fx: %d, fy: %d, fz: %d", newGrid.x, newGrid.y, newGrid.z);
 
                     auto search = hashGrid.find(newGrid);
                     if (hashGrid.find(newGrid) == hashGrid.end()) {
                         // dont do anything
                     } else {
                         // vector1.insert( vector1.end(), vector2.begin(), vector2.end() );
+                        // printf("search->second: %lu\n", search->second.size());
+
                         par.neighbors.insert( par.neighbors.end(), search->second.begin(), search->second.end() );
                     }
                 }
