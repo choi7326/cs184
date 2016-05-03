@@ -15,9 +15,9 @@
 
 Particles::Particles() 
 {
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
+    int nx = 3;
+    int ny = 3;
+    int nz = 3;
 
     for(int x=0; x<nx; x++)
     {
@@ -65,14 +65,8 @@ void Particles::step() {
     hash_grid();
     find_neighbors();
 
-    // printf("checkpoint 2\n");
-
-    // for(Particle &par : particles) {
-    //     //find neighbors & store
-    //     //roughly 9 cells.
-    //     //using new_p
-    // }    
     for(int i = 0; i <= nIters; i++) {
+        printf("====iteration %d=====\n", i);
         for(Particle &par : particles) {
             //for all particles, find lambda i
             double density = 0;
@@ -96,46 +90,31 @@ void Particles::step() {
             pd = 1/(rest_density) * pd;
             //collision handling
             par.new_p = par.p + pd;
+            if (par.new_p.x < -1. or par.new_p.x > 1.) {
+                par.new_p.x = par.new_p.x + dt * -par.v.x;
+            } 
+            if (par.new_p.y < -1. or par.new_p.y > 1.) {
+                par.new_p.y = par.new_p.y + dt * -par.v.y;
+            } 
+            if (par.new_p.z < -1. or par.new_p.z > 1.) {
+                par.new_p.z = par.new_p.z + dt * -par.v.z;
+            }
             // printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
 
         }
     }
 
-    // for (Particle &par : particles) {
-    //     printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
-    // }   
-
-    // printf("checkpoint 3\n");
-
-    // for (Particle &par : particles) {
-    //     printf("x: %f, y: %f, z: %f\n", par.v.x, par.v.y, par.v.z);
-    // }
-
     for (Particle &par : particles) {
         //update velocity t+1
-
         par.v = (par.new_p - par.p) / dt;
-
-        // printf("x: %f, y: %f, z: %f\n", par.v.x, par.v.y, par.v.z);
-
         //apply viscosity & vorticity
         
         //update position t+1
         par.p = par.new_p;   
-
-        // printf("x: %f, y: %f, z: %f", par.p.x, par.p.y, par.p.z);
+        printf("x: %f, y: %f, z: %f\n", par.p.x, par.p.y, par.p.z);
     }
 
     // printf("checkpoint 4\n");
-
-
-    // for(Particle &par : particles) {  
-    //     std::vector<Particle> neighbors;
-    //     //only z is affected by gravity  
-    //     par.v.y = par.v.y + dt * g;
-    //     par.p.y = par.p.y + dt * par.v.y;
-    // }
-
 }
 
 // returns hash value of a particle
