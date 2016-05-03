@@ -44,7 +44,7 @@ private:
         glm::dvec3 v;
         double density;
     	double lambda;
-    	std::vector<Particle> neighbors;
+    	std::vector<Particle*> neighbors;
     };
 
     // double rest_density;
@@ -92,7 +92,7 @@ private:
 	};
 
 	std::vector<Particle> particles;
-    std::unordered_map<Grid, std::vector<Particle>, GridHasher> hashGrid;
+    std::unordered_map<Grid, std::vector<Particle*>, GridHasher> hashGrid;
 
 };
 

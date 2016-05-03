@@ -53,7 +53,6 @@ glm::dvec3 Particles::spiky_kernel(glm::dvec3 r, double h) {
 void Particles::step() {
     for(Particle &par : particles) { 
         //printf("x: %f, y: %f, z: %f\n", par.p.x, par.p.y, par.p.z); 
-        std::vector<Particle> neighbors;
         //only z is affected by gravity  
         par.v.y = par.v.y + dt * g;
         par.new_p.y = par.p.y + dt * par.v.y;
@@ -69,11 +68,11 @@ void Particles::step() {
             //for all particles, find lambda i
             double density = 0;
             glm::dvec3 lambda = glm::dvec3(0.0, 0.0, 0.0);
-            for (const Particle &neighbor : par.neighbors) { //iterate through neighbors
+            for (const Particle* neighbor : par.neighbors) { //iterate through neighbors
                 //calculate density
-                density += smoothing_kernel(par.p - neighbor.p, kernel_size);
+                density += smoothing_kernel(par.p - neighbor->p, kernel_size);
                 //calculate lambda
-                lambda += spiky_kernel(par.p - neighbor.p, kernel_size);
+                lambda += spiky_kernel(par.p - neighbor->p, kernel_size);
             }
             double C = (density / rest_density) - 1;
             printf("C = %f\n", C);
@@ -83,10 +82,10 @@ void Particles::step() {
         for(Particle &par : particles) {
             //for all particles, find position delta 
             glm::dvec3 pd = glm::dvec3(0.0, 0.0, 0.0);
-            for (const Particle &neighbor : par.neighbors) {
-                double lambdas = par.lambda + neighbor.lambda;
-                printf("par: %f, neighbor:%f\n", par.lambda, neighbor.lambda);
-                pd += (lambdas) * spiky_kernel(par.p - neighbor.p, kernel_size);
+            for (const Particle* neighbor : par.neighbors) {
+                double lambdas = par.lambda + neighbor->lambda;
+                printf("par: %f, neighbor:%f\n", par.lambda, neighbor->lambda);
+                pd += (lambdas) * spiky_kernel(par.p - neighbor->p, kernel_size);
             }
             pd = 1/(rest_density) * pd;
             //collision handling
@@ -126,7 +125,7 @@ void Particles::step() {
 // updates hash_grid()
 void Particles::hash_grid() {
     //build the hash grid
-    std::unordered_map<Grid, std::vector<Particle>, GridHasher> newHashGrid;
+    std::unordered_map<Grid, std::vector<Particle*>, GridHasher> newHashGrid;
     for(Particle &par : particles) {  
         Grid newGrid;
         newGrid.x = floor(par.p.x/kernel_size); 
@@ -135,11 +134,11 @@ void Particles::hash_grid() {
 
         auto search = newHashGrid.find(newGrid);
         if (search == newHashGrid.end()) {
-            std::vector<Particle> cell;
-            cell.push_back(par);
+            std::vector<Particle*> cell;
+            cell.push_back(&par);
             newHashGrid.insert({newGrid, cell});
         } else {
-            search->second.push_back(par);
+            search->second.push_back(&par);
         }
     }
     hashGrid = newHashGrid;
@@ -181,7 +180,7 @@ void Particles::find_neighbors()
                 }
             }
         }
-        printf("neighbors: %lu\n", par.neighbors.size());
+        // printf("neighbors: %lu\n", par.neighbors.size());
     }
 }
 
