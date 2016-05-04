@@ -30,11 +30,29 @@ public:
     Particles();
     void render() const;
     void step(); // simulate one frame
-    double smoothing_kernel(glm::dvec3 r, double h);
+    double smoothing_kernel(double r, double h);
     glm::dvec3 spiky_kernel(glm::dvec3 r, double h);
     void hash_grid();
     void find_neighbors();
     double magnitude(glm::dvec3 r);
+    double dot(glm::dvec3 a, glm::dvec3 b);
+    // double calculate_density(Particle par);
+    void calculate_lambda_and_density();
+    void calculate_density();
+    void calculate_lambda();
+    glm::dvec3 CiGradient(glm::dvec3 r, double h);
+
+    double d = 0.1; //resting density
+    glm::dvec3 g = glm::dvec3(0, -9.8, 0); //gravisty
+    double kernel_size = d*1.2;
+    double radius = d*0.45;
+    double k = 0.001; //artificial pressure
+    double n = 4; //artificial pressure
+    double q = 0; //artificial pressure
+    double epsilon = 1e3;
+    double nIters = 10;
+    double rest_density = 1/(d*d*d);
+    double dt = 0.001;
 
     // void wireBox(int myVar);
 private:
@@ -47,29 +65,6 @@ private:
     	double lambda;
     	std::vector<Particle*> neighbors;
     };
-
-    // double rest_density;
-    // double kernel_size;
-    // double radius;
-    // double k;
-    // double n;
-    // double q;
-    // double epsilon;
-    // double nIters;
-    // double dt;
-    // double g;
-
-    double d = 0.1; //resting density
-    double g = -9.8; //gravisty
-    double kernel_size = d*1.4;
-    double radius = d*0.45;
-    double k = 0.001; //artificial pressure
-    double n = 4; //artificial pressure
-    double q = 0; //artificial pressure
-    double epsilon = 1e3;
-    double nIters = 10;
-    double rest_density = 1/(d*d*d);
-    double dt = 0.001;
 
     struct Grid
 	{
