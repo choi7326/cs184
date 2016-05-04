@@ -16,9 +16,9 @@
 
 Particles::Particles() 
 {
-    int nx = 10;
-    int ny = 10;
-    int nz = 10;
+    int nx = 5;
+    int ny = 5;
+    int nz = 5;
 
     
     for(int x=0; x<nx; x++)
@@ -139,7 +139,7 @@ void Particles::calculate_lambda() {
         double C = -((par.density / rest_density) - 1.0);
         //printf("self sum: %f, sum_gradients: %f\n", magnitude(self_sum), sum_gradients);
         self_sum = (1/rest_density) * self_sum;
-        sum_gradients = pow(magnitude(self_sum),2.) + sum_gradients;
+        sum_gradients = magnitude(self_sum) + sum_gradients;
         par.lambda = -C/ (sum_gradients+epsilon);
         printf("lambda: %f\n", par.lambda);
         // if (par.lambda < 0) par.lambda = 0.0;
@@ -166,7 +166,6 @@ void Particles::step() {
     find_neighbors();
 
     for(int i = 0; i <= nIters; i++) {
-        //printf("====iteration %d=====\n", i);
 
         calculate_density();
         calculate_lambda();

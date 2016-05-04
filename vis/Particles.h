@@ -50,7 +50,7 @@ public:
     double k = 0.001; //artificial pressure
     double n = 4; //artificial pressure
     double q = 0.1*kernel_size; //artificial pressure
-    double epsilon = 1e3;
+    double epsilon = 1e4;
     double nIters = 10;
     double rest_density = 1/(d*d*d);
     double dt = 0.001;
