@@ -16,9 +16,9 @@
 
 Particles::Particles() 
 {
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
+    int nx = 10;
+    int ny = 10;
+    int nz = 10;
 
     
     for(int x=0; x<nx; x++)
@@ -141,7 +141,7 @@ void Particles::calculate_lambda() {
         self_sum = (1/rest_density) * self_sum;
         sum_gradients = magnitude(self_sum) + sum_gradients;
         par.lambda = -C/ (sum_gradients+epsilon);
-        printf("lambda: %f\n", par.lambda);
+        //printf("lambda: %f\n", par.lambda);
         // if (par.lambda < 0) par.lambda = 0.0;
         //if (counter == 1) printf("#%d C is %f\n", counter, C);
         counter += 1;

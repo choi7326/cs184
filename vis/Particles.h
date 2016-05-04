@@ -44,7 +44,7 @@ public:
     glm::dvec3 CiGradient(glm::dvec3 r, double h);
 
     double d = 0.1; //resting density
-    glm::dvec3 g = glm::dvec3(0., -9.8, 0.); //gravisty
+    glm::dvec3 g = glm::dvec3(0., -30, 0.); //gravisty
     double kernel_size = d*1.7;
     double radius = d*0.45;
     double k = 0.001; //artificial pressure
