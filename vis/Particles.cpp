@@ -36,9 +36,14 @@ Particles::Particles()
 }
 
 double Particles::smoothing_kernel(double r, double h) {
-    double first = 315/(64*M_PI*pow(h, 9));
-    double second = pow(pow(h, 2) - pow(r, 2), 3);
-    return first*second;
+    if (r <= h and r >= 0) {
+        double first = 315/(64*M_PI*pow(h, 9));
+        double second = pow(pow(h, 2) - pow(r, 2), 3);
+        return first*second;
+    } else {
+        return 0.0;
+    }
+    
 }
 
 double Particles::magnitude(glm::dvec3 r) {
@@ -47,13 +52,17 @@ double Particles::magnitude(glm::dvec3 r) {
 
 glm::dvec3 Particles::spiky_kernel(glm::dvec3 r, double h) {
     //printf("SPIKY R: x: %f, y: %f, z: %f\n", r.x, r.y, r.z);
-    double first = 45.0 / (M_PI * pow(h, 6));
-    double second = pow((h - magnitude(r)), 2);
-    //printf("magnitude = %f\n", (length(r)));
-    glm::dvec3 third = r / (magnitude(r));
-    glm::dvec3 result = first*second*third;
-    //printf("spiky: %f %f %f\n", result.x, result.y, result.z);
-    return result;
+    if (magnitude(r) <= h and magnitude(r) >= 0.0) {
+        double first = 15.0 / (M_PI * pow(h, 6));
+        double second = pow((h - magnitude(r)), 2);
+        //printf("magnitude = %f\n", (length(r)));
+        glm::dvec3 third = r / (magnitude(r));
+        glm::dvec3 result = first*second*third;
+        //printf("spiky: %f %f %f\n", result.x, result.y, result.z);
+        return result;
+    }
+    return glm::dvec3(0, 0, 0);
+
 }
 
 glm::dvec3 Particles::CiGradient(glm::dvec3 r, double h) {
@@ -169,13 +178,13 @@ void Particles::step() {
         for(Particle &par : particles) {
             //for all particles, find position delta 
             glm::dvec3 pos_delta = glm::dvec3(0.0, 0.0, 0.0);
-            for (const Particle* neighbor : par.neighbors) {
+            for (Particle* neighbor : par.neighbors) {
                 if(neighbor->new_p.x == par.new_p.x and neighbor->new_p.y == par.new_p.y and neighbor->new_p.z == par.new_p.z) {
                     continue;
                 }
-                // double smooth = smoothing_kernel(magnitude(par.new_p - neighbor->new_p), kernel_size);
-                // double smooth_q = smoothing_kernel(0.0, kernel_size);
-                // double s_corr = -0.001f * pow(smooth/smooth_q, 4);
+                double smooth = smoothing_kernel(magnitude(par.new_p - neighbor->new_p), kernel_size);
+                double smooth_q = smoothing_kernel(0.0, kernel_size);
+                double s_corr = -k * pow(smooth/smooth_q, n);
                 //printf("s_corr: %f\n", s_corr);
                 double lambdas = par.lambda + neighbor->lambda;
                 //printf("par: %f, neighbor:%f\n", par.lambda, neighbor->lambda);
@@ -185,36 +194,12 @@ void Particles::step() {
                 //printf("pd = (%f, %f, %f)\n", pos_delta.x, pos_delta.y, pos_delta.z);
             }
 
-            //(1 + lamda + s_corr) * spiky
             pos_delta = 1.0/(rest_density) * pos_delta;
             //printf("pd = (%f, %f, %f)\n", pos_delta.x, pos_delta.y, pos_delta.z);
             //collision handling
             par.new_p = par.new_p + pos_delta;
 
-
-            if (par.new_p.x <= -1.) {
-                par.new_p.x = -1;
-            }
-
-            if (par.new_p.x >= 1.) {
-                par.new_p.x = 1;
-            } 
-
-            if (par.new_p.y <= -1.) {
-                par.new_p.y = -1;
-
-            } 
-            if (par.new_p.y >= 1.) {
-                par.new_p.y = 1;
-            }
-
-            if (par.new_p.z <= -1.) {
-                par.new_p.z = -1;
-
-            } 
-            if (par.new_p.z >= 1.) {
-                par.new_p.z = 1;
-            }
+            collision();
             //printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
         }
     }
@@ -230,6 +215,33 @@ void Particles::step() {
     }
 }
 
+void Particles::collision() {
+    for(Particle &par : particles) { 
+        if (par.new_p.x <= -1.) {
+            par.new_p.x = -1;
+        }
+
+        if (par.new_p.x >= 1.) {
+            par.new_p.x = 1;
+        } 
+
+        if (par.new_p.y <= -1.) {
+            par.new_p.y = -1;
+
+        } 
+        if (par.new_p.y >= 1.) {
+            par.new_p.y = 1;
+        }
+
+        if (par.new_p.z <= -1.) {
+            par.new_p.z = -1;
+
+        } 
+        if (par.new_p.z >= 1.) {
+            par.new_p.z = 1;
+        }
+    }
+}
 //lambda
 //density
 //boxcollision

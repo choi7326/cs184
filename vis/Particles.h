@@ -40,6 +40,7 @@ public:
     void calculate_lambda_and_density();
     void calculate_density();
     void calculate_lambda();
+    void collision();
     glm::dvec3 CiGradient(glm::dvec3 r, double h);
 
     double d = 0.1; //resting density
