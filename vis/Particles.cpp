@@ -143,9 +143,9 @@ void Particles::calculate_lambda() {
         }
         double C = (par.density / rest_density) - 1.0;
         sum_gradients = magnitude(self_sum) + sum_gradients;
-        par.lambda = C/ (sum_gradients+epsilon);
+        par.lambda = 0.1 * C/ (sum_gradients+epsilon);
         // if (par.lambda < 0) par.lambda = 0.0;
-        if (counter == 1) printf("#%d C is %f\n", counter, C);
+        // if (counter == 1) printf("#%d C is %f\n", counter, C);
         counter += 1;
     }
     
@@ -170,7 +170,7 @@ void Particles::step() {
     find_neighbors();
 
     for(int i = 0; i <= nIters; i++) {
-        printf("====iteration %d=====\n", i);
+        // printf("====iteration %d=====\n", i);
 
         calculate_density();
         calculate_lambda();
