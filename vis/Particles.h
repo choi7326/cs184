@@ -44,14 +44,14 @@ public:
     glm::dvec3 CiGradient(glm::dvec3 r, double h);
 
     double d = 0.1; //resting density
-    glm::dvec3 g = glm::dvec3(0, -9.8, 0); //gravisty
-    double kernel_size = d*1.4;
+    glm::dvec3 g = glm::dvec3(0., -9.8, 0.); //gravisty
+    double kernel_size = d*1.7;
     double radius = d*0.45;
     double k = 0.001; //artificial pressure
     double n = 4; //artificial pressure
-    double q = 0; //artificial pressure
-    double epsilon = 1e5;
-    double nIters = 20;
+    double q = 0.1*kernel_size; //artificial pressure
+    double epsilon = 1e3;
+    double nIters = 10;
     double rest_density = 1/(d*d*d);
     double dt = 0.001;
 
@@ -84,7 +84,7 @@ private:
 	{
 	  std::size_t operator()(const Grid& g) const
 	  {
-	    return floor(g.x)+floor(g.y)*1300583+floor(g.z)*105607;;
+	    return g.x+g.y*1300583+g.z*105607;;
 	  }
 	};
 

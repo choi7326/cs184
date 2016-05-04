@@ -12,12 +12,13 @@
  */
 
 #include "Particles.h"
+#include <cmath>
 
 Particles::Particles() 
 {
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
+    int nx = 10;
+    int ny = 10;
+    int nz = 10;
 
     
     for(int x=0; x<nx; x++)
@@ -37,7 +38,7 @@ Particles::Particles()
 
 double Particles::smoothing_kernel(double r, double h) {
     if (r <= h and r >= 0) {
-        double first = 315/(64*M_PI*pow(h, 9));
+        double first = 315./(64.*M_PI*pow(h, 9.));
         double second = pow(pow(h, 2) - pow(r, 2), 3);
         return first*second;
     } else {
@@ -70,41 +71,41 @@ glm::dvec3 Particles::CiGradient(glm::dvec3 r, double h) {
 }
 
 void Particles::calculate_lambda_and_density() {
-    for(Particle &par : particles) {
-        //for all particles, find lambda i
-        double density = 0.0;
-        // glm::dvec3 sum_gradients = glm::dvec3(0.0, 0.0, 0.0);
-        double sum_gradients = 0.0;
-        glm::dvec3 self_sum = glm::dvec3(0, 0, 0);
-        if (par.neighbors.size() == 0) {
-            par.lambda = 0.;
-            par.density = 0.;
-        } else {
-            for (const Particle* neighbor : par.neighbors) { //iterate through neighbors
-                //calculate density
-                double dist = magnitude(par.new_p - neighbor->new_p);
-                if (dist > kernel_size) {
-                  continue;  
-                } 
-                density += smoothing_kernel(dist, kernel_size);
-                if(neighbor->new_p.x == par.new_p.x and neighbor->new_p.y == par.new_p.y and neighbor->new_p.z == par.new_p.z) {
-                    continue;
-                }
-                //calculate lambda
-                glm::dvec3 r = par.new_p - neighbor->new_p;
-                //printf("par = (%f, %f,%f), neighbor = (%f, %f, %f), par-neighbor = (%f, %f, %f) \n", par.new_p.x, par.new_p.y, par.new_p.z, neighbor->new_p.x, neighbor->new_p.y, neighbor->new_p.z, r.x, r.y, r.z);
-                //printf("BEFORE: Lambda: %f %f %f\n", lambda.x, lambda.y, lambda.z);
-                self_sum += CiGradient(r, kernel_size);
-                sum_gradients += pow(magnitude(CiGradient(r, kernel_size)), 2);
-            }
-            double C = (density / rest_density) - 1.0;
-            par.density = density;
-            sum_gradients = magnitude(self_sum) + sum_gradients;
-            par.lambda = -C/ (sum_gradients+epsilon);
-        }
-        if (par.lambda > 0) par.lambda = 0.0;
-        //printf("lambda: %f\n", par.lambda); 
-    } 
+    // for(Particle &par : particles) {
+    //     //for all particles, find lambda i
+    //     double density = 0.0;
+    //     // glm::dvec3 sum_gradients = glm::dvec3(0.0, 0.0, 0.0);
+    //     double sum_gradients = 0.0;
+    //     glm::dvec3 self_sum = glm::dvec3(0, 0, 0);
+    //     if (par.neighbors.size() == 0) {
+    //         par.lambda = 0.;
+    //         par.density = 0.;
+    //     } else {
+    //         for (const Particle* neighbor : par.neighbors) { //iterate through neighbors
+    //             //calculate density
+    //             double dist = magnitude(par.new_p - neighbor->new_p);
+    //             if (dist > kernel_size) {
+    //               continue;  
+    //             } 
+    //             density += smoothing_kernel(dist, kernel_size);
+    //             if(neighbor->new_p.x == par.new_p.x and neighbor->new_p.y == par.new_p.y and neighbor->new_p.z == par.new_p.z) {
+    //                 continue;
+    //             }
+    //             //calculate lambda
+    //             glm::dvec3 r = par.new_p - neighbor->new_p;
+    //             //printf("par = (%f, %f,%f), neighbor = (%f, %f, %f), par-neighbor = (%f, %f, %f) \n", par.new_p.x, par.new_p.y, par.new_p.z, neighbor->new_p.x, neighbor->new_p.y, neighbor->new_p.z, r.x, r.y, r.z);
+    //             //printf("BEFORE: Lambda: %f %f %f\n", lambda.x, lambda.y, lambda.z);
+    //             self_sum += CiGradient(r, kernel_size);
+    //             sum_gradients += pow(magnitude(CiGradient(r, kernel_size)), 2);
+    //         }
+    //         double C = (density / rest_density) - 1.0;
+    //         par.density = density;
+    //         sum_gradients = magnitude(self_sum) + sum_gradients;
+    //         par.lambda = -C/ (sum_gradients+epsilon);
+    //     }
+    //     if (par.lambda > 0) par.lambda = 0.0;
+    //     //printf("lambda: %f\n", par.lambda); 
+    // } 
 }
 
 void Particles::calculate_density() {
@@ -114,9 +115,6 @@ void Particles::calculate_density() {
         for (const Particle* neighbor : par.neighbors) { //iterate through neighbors
             //calculate density
             double dist = magnitude(par.new_p - neighbor->new_p);
-            if (dist > kernel_size) {
-              continue;  
-            } 
             density += smoothing_kernel(dist, kernel_size);
         }
         par.density = density;
@@ -132,20 +130,20 @@ void Particles::calculate_lambda() {
         double sum_gradients = 0.0;
         glm::dvec3 self_sum = glm::dvec3(0, 0, 0);
         for (const Particle* neighbor : par.neighbors) { //iterate through neighbors
-            //calculate density
-            if(neighbor->new_p.x == par.new_p.x and neighbor->new_p.y == par.new_p.y and neighbor->new_p.z == par.new_p.z) {
-                continue;
-            }
             //calculate lambda
             glm::dvec3 r = par.new_p - neighbor->new_p;
-            self_sum += CiGradient(r, kernel_size);
-            sum_gradients += pow(magnitude(CiGradient(r, kernel_size)), 2);
+            if (magnitude(r) == 0) continue;
+            self_sum += spiky_kernel(r, kernel_size);
+            sum_gradients += pow(magnitude(CiGradient(r, kernel_size)), 2.0);
         }
-        double C = (par.density / rest_density) - 1.0;
-        sum_gradients = magnitude(self_sum) + sum_gradients;
-        par.lambda = C/ (sum_gradients+epsilon);
+        double C = -((par.density / rest_density) - 1.0);
+        //printf("self sum: %f, sum_gradients: %f\n", magnitude(self_sum), sum_gradients);
+        self_sum = (1/rest_density) * self_sum;
+        sum_gradients = pow(magnitude(self_sum),2.) + sum_gradients;
+        par.lambda = -C/ (sum_gradients+epsilon);
+        printf("lambda: %f\n", par.lambda);
         // if (par.lambda < 0) par.lambda = 0.0;
-        if (counter == 1) printf("#%d C is %f\n", counter, C);
+        //if (counter == 1) printf("#%d C is %f\n", counter, C);
         counter += 1;
     }
     
@@ -157,10 +155,8 @@ double Particles::dot(glm::dvec3 a, glm::dvec3 b) {
 
 
 void Particles::step() {
+    printf("===TIME STEP===\n");
     for(Particle &par : particles) { 
-        if (isnan(par.p.x) or isnan(par.p.y) or isnan(par.p.z)) {
-            printf("NANANANANNAN NOOOO NOOO NOOO HELP \n");
-        }
         //only z is affected by gravity  
         par.v = par.v + dt * g;
         par.new_p = par.p + dt * par.v;
@@ -170,7 +166,7 @@ void Particles::step() {
     find_neighbors();
 
     for(int i = 0; i <= nIters; i++) {
-        printf("====iteration %d=====\n", i);
+        //printf("====iteration %d=====\n", i);
 
         calculate_density();
         calculate_lambda();
@@ -184,9 +180,9 @@ void Particles::step() {
                 }
                 double smooth = smoothing_kernel(magnitude(par.new_p - neighbor->new_p), kernel_size);
                 double smooth_q = smoothing_kernel(0.0, kernel_size);
-                double s_corr = -k * pow(smooth/smooth_q, n);
+                double s_corr = k * pow(smooth/smooth_q, n);
                 //printf("s_corr: %f\n", s_corr);
-                double lambdas = par.lambda + neighbor->lambda;
+                double lambdas = par.lambda + neighbor->lambda + s_corr;
                 //printf("par: %f, neighbor:%f\n", par.lambda, neighbor->lambda);
                 glm::dvec3 spiky = spiky_kernel(par.new_p - neighbor->new_p, kernel_size);
                 //printf("spiky = (%f, %f, %f)\n", spiky.x, spiky.y, spiky.z);
@@ -197,9 +193,8 @@ void Particles::step() {
             pos_delta = 1.0/(rest_density) * pos_delta;
             //printf("pd = (%f, %f, %f)\n", pos_delta.x, pos_delta.y, pos_delta.z);
             //collision handling
-            par.new_p = par.new_p + pos_delta;
-
             collision();
+            par.new_p = par.new_p + pos_delta;
             //printf("x: %f, y: %f, z: %f\n", par.new_p.x, par.new_p.y, par.new_p.z);
         }
     }
@@ -346,6 +341,7 @@ void Particles::render() const
     }
     
     glPopAttrib();
+    glEnable(GL_DEPTH_TEST);
     glutWireCube(2.0);
 }
 
