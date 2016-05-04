@@ -45,13 +45,13 @@ public:
 
     double d = 0.1; //resting density
     glm::dvec3 g = glm::dvec3(0, -9.8, 0); //gravisty
-    double kernel_size = d*1.2;
+    double kernel_size = d*1.4;
     double radius = d*0.45;
     double k = 0.001; //artificial pressure
     double n = 4; //artificial pressure
     double q = 0; //artificial pressure
-    double epsilon = 1e3;
-    double nIters = 10;
+    double epsilon = 1e5;
+    double nIters = 20;
     double rest_density = 1/(d*d*d);
     double dt = 0.001;
 

@@ -143,8 +143,8 @@ void Particles::calculate_lambda() {
         }
         double C = (par.density / rest_density) - 1.0;
         sum_gradients = magnitude(self_sum) + sum_gradients;
-        par.lambda = -C/ (sum_gradients+epsilon);
-        if (par.lambda < 0) par.lambda = 0.0;
+        par.lambda = C/ (sum_gradients+epsilon);
+        // if (par.lambda < 0) par.lambda = 0.0;
         if (counter == 1) printf("#%d C is %f\n", counter, C);
         counter += 1;
     }
