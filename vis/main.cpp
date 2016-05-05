@@ -17,7 +17,7 @@ inline float clip(const float& n, const float& lower, const float& upper)
 
 float theta = M_PI/8;
 float phi = -M_PI/8+M_PI_2;
-float dist = 2.5;
+float dist = 5;
 int width = 800;
 int height = 800;
 int frame = 0;

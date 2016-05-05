@@ -16,9 +16,9 @@
 
 Particles::Particles() 
 {
-    int nx = 10;
-    int ny = 10;
-    int nz = 10;
+    int nx = 20;
+    int ny = 20;
+    int nz = 20;
 
     
     for(int x=0; x<nx; x++)
@@ -28,7 +28,7 @@ Particles::Particles()
             for(int z=0; z<nz; z++)
             {       
                 Particle par;
-                par.p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5+ny*0.5)*d-1.0, (z+0.5-nz*0.5)*d);
+                par.p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5)*d-1.0, (z+0.5-nz*0.5)*d);
                 par.new_p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5+ny*0.5)*d-1.0, (z+0.5-nz*0.5)*d);
                 particles.push_back(par);
             }
@@ -155,7 +155,7 @@ double Particles::dot(glm::dvec3 a, glm::dvec3 b) {
 
 
 void Particles::step() {
-    printf("===TIME STEP===\n");
+    //printf("===TIME STEP===\n");
     for(Particle &par : particles) { 
         //only z is affected by gravity  
         par.v = par.v + dt * g;
@@ -341,6 +341,6 @@ void Particles::render() const
     
     glPopAttrib();
     glEnable(GL_DEPTH_TEST);
-    glutWireCube(2.0);
+    glutWireCube(3.0);
 }
 
